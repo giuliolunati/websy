@@ -15,7 +15,7 @@ websy: object [
 		quiet: false
 	]
 	
-	listen-port: none     ; for internal use, to be able to close the port again
+	listen-port: _ ; for internal use, to be able to close the port again
 
 	code-map: make map! [200 "OK" 400 "Forbidden" 404 "Not Found" 410 "Gone"
 		500 "Internal Server Error" 501 "Not Implemented"]
@@ -85,7 +85,7 @@ websy: object [
 		code [integer!] "http response code"
 		type [word! string!]    "file ending as word, e.g. 'html, 'css, to be looked up."
 	][
-		?? type
+		dump type
 		probe ajoin [
 			"HTTP/1.0 " code " " code-map/:code crlf
 			"Content-type: " mime-map/:type crlf2x
@@ -127,7 +127,7 @@ websy: object [
 				req/file-base: req/file-name 
 				req/file-type: ""
 			]
-			either query-string [
+			either all[set? 'query-string query-string ] [
 				req/query-string: query-string
 				req/query: map split query-string query-split-char
 			][
@@ -218,7 +218,7 @@ websy: object [
 			"PUT"    [handle-put    req]
 			"DELETE" [handle-delete req]
 		]
-		either all [value? 'reply block? reply][
+		either all [set? 'reply block? reply][
 			;either all [3 = length? reply integer? reply/1 word? reply/2 string? reply/3][
 			either parse reply [ integer! word! string! opt string! ][
 				reply
@@ -250,7 +250,7 @@ websy: object [
 	
 	awake-server-dispatch: function [
 		"A client wants to connect"
-		event [object!]
+		event
 	][
 		if event/type = 'accept [
 			connection: first event/port
@@ -259,7 +259,7 @@ websy: object [
 		]
 	]
 
-	extend: function [
+	extend: proc [
 		"extend websy with the following definitions"
 		code [block!]
 	][
