@@ -132,13 +132,13 @@ websy: object [
 			]
 			)
 			any [
-				copy name [some name-char] 2 skip copy data to newline
+				copy name: [some name-char] 2 skip copy data: to newline
 				(name: to-word name
 				req/:name: data)
 				newline
 			]
 			newline
-			copy content-string to end
+			copy content-string: to end
 			(
 			req/content-string: content-string
 			req/content: map split content-string query-split-char
@@ -186,7 +186,7 @@ websy: object [
 		port [port!] "port to send the datat to"
 		data [block!] "http return code, mime-type, page-body"
 	][
-		set [code type body] data
+		set [code: type: body:] data
 		chunk: 32000
 		write port build-header code type
 		until [
