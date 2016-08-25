@@ -54,10 +54,8 @@ websy: object [
 		request [string!] "request string"
 		info [string!] "additional error information"
 	][
-		r3: system/version
-		req: reduce [request newline newline mold parse-request request "***"]
 		reduce [
-			status-code mime-map/html 
+			status-code 'html
 			reword template-error compose [
 				code (status-code) text (code-map/:status-code)
 				info (info)
