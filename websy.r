@@ -2,25 +2,25 @@ REBOL [
 	Title: "Websy - a tiny HTTP/1.0 404-Error server"
 	Author: "Ingo Hohmann"
 	About: {A small server serving 404 errors over http/1.0.
-		As an added bonus it is relatively easy to change the handlers 
+		As an added bonus it is relatively easy to change the handlers
 		to return something more interesting.
 	}
 ]
 
 websy: object [
-	this: self				;store away self
+	this: self ;store away self
 
 	config: object [
 		port: 8080
 		quiet: false
 	]
-	
+
 	listen-port: _ ; for internal use, to be able to close the port again
 
 	code-map: make map! [200 "OK" 400 "Forbidden" 404 "Not Found" 410 "Gone"
 		500 "Internal Server Error" 501 "Not Implemented"]
-	
-	mime-map: make map! [html "text/html" jpg "image/jpeg" r "text/plain" 
+
+	mime-map: make map! [html "text/html" jpg "image/jpeg" r "text/plain"
 		txt "text/plain" js "application/javascript" json "application/json"
 		css "text/css"
 	]
@@ -28,12 +28,12 @@ websy: object [
 	template-error: trim/auto {
 		<html><head><title>$code $text</title></head>
 		<body><h1>$text</h1>
-	   <h2>Info</h2>
+		<h2>Info</h2>
 		<p>$info</p>
 		<h2>Request:</h2>
 		<pre>$request</pre>
 		<hr>
-		<i>websy.r</i> 
+		<i>websy.r</i>
 		on <a href="http://www.rebol.com/rebol3/">REBOL 3</a> $r3
 		</body></html>
 	}
@@ -41,7 +41,7 @@ websy: object [
 	template-page: trim/auto {
 		<html><head><title>$title</title></head>
 		<body>
-	   $content
+		$content
 		</body></html>
 	}
 
@@ -63,7 +63,7 @@ websy: object [
 			]
 		]
 	]
-	
+
 	build-success-response: function [
 		"Create a block containing return-code(200), mime-type(html), and html content"
 		type "unused"
@@ -73,18 +73,17 @@ websy: object [
 		reduce [
 			200 mime-map/html
 			reword template-page compose [
-				title (title) content (html) 
+				title (title) content (html)
 			]
-		]	
+		]
 	]
-	
+
 	build-header: function [
 		"Build response header"
 		code [integer!] "http response code"
 		type [word! string!]    "file ending as word, e.g. 'html, 'css, to be looked up."
 	][
-		dump type
-		probe ajoin [
+		ajoin [
 			"HTTP/1.0 " code " " code-map/:code crlf
 			"Content-type: " mime-map/:type crlf2x
 		]
@@ -94,7 +93,6 @@ websy: object [
 		"decode an url encoded string"
 		s [string!]
 	][
-	   dbg/log s
 		dehex replace/all s #"+" #" "
 	]
 
@@ -107,7 +105,7 @@ websy: object [
 		query-split-char: charset "&="
 		req: make map! []
 		parse request [
-			copy method: to #" " skip 
+			copy method: to #" " skip
 			copy path: to #" " skip
 			copy version: to newline newline
 			(
@@ -119,10 +117,10 @@ websy: object [
 			req/path-elements: next split path #"/"
 			req/file-name: last req/path-elements
 			either pos: find/last req/file-name #"." [
-				req/file-base: copy/part req/file-name pos 
+				req/file-base: copy/part req/file-name pos
 				req/file-type: copy next pos
 			][
-				req/file-base: req/file-name 
+				req/file-base: req/file-name
 				req/file-type: ""
 			]
 			either all[set? 'query-string query-string ] [
@@ -159,7 +157,6 @@ websy: object [
 		"Handle a get request, to be implemented by the user of this library"
 		request [string!]
 	][
-		;print 'handle-get-default
 		build-error-response 404 request "HTTP GET default handler"
 	]
 
@@ -167,7 +164,6 @@ websy: object [
 		"Handle a post request, to be implemented by the user of this library"
 		request [string!]
 	][
-		;print 'handle-post-default
 		build-error-response 404 request "HTTP POST default Handler"
 	]
 
@@ -175,7 +171,6 @@ websy: object [
 		"Handle a put request, to be implemented by the user of this library"
 		request [string!]
 	][
-		;print 'handle-put-default
 		build-error-response 404 request "HTTP PUT default Handler"
 	]
 
@@ -183,7 +178,6 @@ websy: object [
 		"Handle a delete request, to be implemented by the user of this library"
 		request [string!]
 	][
-		;print 'handle-delete-default
 		build-error-response 410 request "HTTP DELETE default Handler"
 	]
 
@@ -192,8 +186,7 @@ websy: object [
 		port [port!] "port to send the datat to"
 		data [block!] "http return code, mime-type, page-body"
 	][
-		;print 'send-answer
-		set [ code type body] data
+		set [code type body] data
 		chunk: 32000
 		write port build-header code type
 		until [
@@ -205,19 +198,17 @@ websy: object [
 	handle-request: function [
 		"build answer to the client"
 		request [binary!]
-		/local reply
+		reply:
 	][
-		;print 'handle-request
 		req: to-string request
 		method: copy/part req find req #" "
-		set/any 'reply switch method [
+		set/opt 'reply switch method [
 			"GET"    [handle-get    req]
 			"POST"   [handle-post   req]
 			"PUT"    [handle-put    req]
 			"DELETE" [handle-delete req]
 		]
 		either all [set? 'reply block? reply][
-			;either all [3 = length? reply integer? reply/1 word? reply/2 string? reply/3][
 			either parse reply [ integer! word! string! opt string! ][
 				reply
 			][
@@ -245,7 +236,7 @@ websy: object [
 			close [close port]
 		]
 	]
-	
+
 	awake-server-dispatch: function [
 		"A client wants to connect"
 		event
@@ -264,24 +255,20 @@ websy: object [
 		do bind code this
 	]
 
-	start: function [
+	start: func [
 		"Start listening"
-		/extern listen-port
 	][
 		if not config/quiet [
 			print join "Websy starting on localhost:" config/port
 		]
-		this/listen-port: open join tcp://: config/port
-		this/listen-port/awake: :awake-server-dispatch
-		wait this/listen-port
+		listen-port: open join tcp://: config/port
+		listen-port/awake: :awake-server-dispatch
+		wait listen-port
 	]
 
-	stop: function [
+	stop: func [
 		"Stop listening"
-		/extern listen-port
 	][
-		close this/listen-port 
+		close listen-port
 	]
 ]
-
-;websy/start
