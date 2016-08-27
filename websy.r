@@ -12,7 +12,11 @@ websy: object [
 
 	config: object [
 		port: 8080
-		quiet: false
+		verbose: 1
+			;; 0: no output
+			;; 1: start message, brief request
+			;; 2: complete request, response headers
+			;; 3: also response body
 	]
 
 	listen-port: _ ; for internal use, to be able to close the port again
@@ -186,7 +190,13 @@ websy: object [
 	][
 		set [code: type: body:] data
 		chunk: 32000
-		write port build-header code type
+		header: build-header code type
+		if config/verbose >= 2 [dump header]
+		if config/verbose >= 3 [
+			print/only "body: => "
+			probe to-string body
+		]
+		write port header
 		until [
 			write port copy/part body chunk
 			tail? body: skip body chunk
@@ -199,6 +209,10 @@ websy: object [
 		reply:
 	][
 		req: to-string request
+		if config/verbose = 1 [
+			print copy/part req find req newline
+		]
+		if config/verbose >= 2 [dump req]
 		method: copy/part req find req #" "
 		set/opt 'reply switch method [
 			"GET"    [handle-get    req]
@@ -256,7 +270,7 @@ websy: object [
 	start: func [
 		"Start listening"
 	][
-		if not config/quiet [
+		if config/verbose > 0 [
 			print join "Websy starting on localhost:" config/port
 		]
 		listen-port: open join tcp://: config/port
