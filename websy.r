@@ -111,8 +111,8 @@ websy: object [
 			(
 			req/method: method
 			req/version: version
-			path: dehex path
 			set [path: query-string:] split path #"?"
+			path: deurl path
 			req/path: path
 			req/path-elements: next split path #"/"
 			req/file-name: last req/path-elements
@@ -125,10 +125,8 @@ websy: object [
 			]
 			either all[set? 'query-string query-string ] [
 				req/query-string: query-string
-				req/query: map split query-string query-split-char
 			][
 				req/query-string: ""
-				req/query: []
 			]
 			)
 			any [
