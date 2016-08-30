@@ -153,7 +153,7 @@ websy: object [
 	; all handle-xxx function have to return a block, containg
 	; http return code [integer!]
 	; mime/type [word!]
-	; page content [string!]
+	; page content [string! | binary!]
 	;
 	handle-get: function [
 		"Handle a get request, to be implemented by the user of this library"
@@ -221,7 +221,7 @@ websy: object [
 			"DELETE" [handle-delete req]
 		]
 		either all [set? 'reply block? reply][
-			either parse reply [ integer! word! string! opt string! ][
+			either parse reply [ integer! word! [binary! | string!] opt [binary! | string!] ][
 				reply
 			][
 				build-error-response 500 req "Sorry, we've got an error, that's purely me doing something wrong."
