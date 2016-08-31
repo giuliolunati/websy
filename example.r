@@ -5,7 +5,10 @@ REBOL [
 	Version: 0.0.1
 ]
 
-w: do %websy.r
+w: any [
+	attempt [import 'websy]
+	attempt [do %websy.reb]
+]
 
 w/extend [
 	handle-get: function [request][
