@@ -264,8 +264,11 @@ awake-server-dispatch: function [
 extend: proc [
 	"extend websy with the following definitions"
 	code [block!]
+	/set "also add new set-words"
 ][
-	do bind code this
+	either set
+	[do bind/set code this]
+	[do bind code this]
 ]
 
 start: func [
